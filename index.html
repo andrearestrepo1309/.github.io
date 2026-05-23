@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SQL Portfolio</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,600;0,700;1,400&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #fdf6f0;
+      --surface: #fff8f4;
+      --card: #ffffff;
+      --border: #f0d9ce;
+      --accent: #c9687a;
+      --accent2: #e8a0a8;
+      --accent3: #a0826d;
+      --text: #3d2b28;
+      --muted: #9c7b74;
+      --keyword: #b5485a;
+      --string: #a0826d;
+      --fn: #c9687a;
+      --num: #d4846a;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Nunito', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ── GRID BACKGROUND ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(201,104,122,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(201,104,122,0.06) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.2rem 4rem;
+      background: rgba(253,246,240,0.90);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      font-family: 'IBM Plex Mono', monospace;
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--accent);
+      letter-spacing: -0.02em;
+    }
+
+    .nav-logo span { color: var(--muted); }
+
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 2.5rem;
+    }
+
+    nav a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+
+    nav a:hover { color: var(--accent); }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding: 8rem 4rem 4rem;
+      z-index: 1;
+    }
+
+    .hero-content { max-width: 800px; }
+
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--accent);
+      border: 1px solid rgba(0,212,255,0.3);
+      padding: 0.4rem 1rem;
+      border-radius: 2px;
+      margin-bottom: 2rem;
+      background: rgba(0,212,255,0.05);
+    }
+
+    .hero-tag::before {
+      content: '▶';
+      font-size: 0.6rem;
+    }
+
+    .hero h1 {
+      font-size: clamp(3rem, 7vw, 5.5rem);
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -0.03em;
+      margin-bottom: 1rem;
+    }
+
+    .hero h1 em {
+      font-style: normal;
+      color: var(--accent);
+      position: relative;
+    }
+
+    .hero-sub {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 1rem;
+      color: var(--muted);
+      margin-bottom: 2.5rem;
+      line-height: 1.7;
+      max-width: 560px;
+    }
+
+    .hero-cta {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.85rem 2rem;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-decoration: none;
+      border-radius: 2px;
+      transition: all 0.2s;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: #b05468;
+      box-shadow: 0 0 30px rgba(201,104,122,0.35);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-outline:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* ── FLOATING CODE BLOCK ── */
+    .hero-visual {
+      position: absolute;
+      right: 4rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 420px;
+      display: none;
+    }
+
+    @media (min-width: 1100px) { .hero-visual { display: block; } }
+
+    .code-window {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 40px 80px rgba(180,100,100,0.15), 0 0 0 1px rgba(201,104,122,0.15);
+      animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
+    }
+
+    .code-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1rem;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot-r { background: #ff5f56; }
+    .dot-y { background: #ffbd2e; }
+    .dot-g { background: #27c93f; }
+
+    .code-filename {
+      margin-left: 0.5rem;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .code-body {
+      padding: 1.5rem;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.78rem;
+      line-height: 1.8;
+    }
+
+    .kw { color: var(--keyword); }
+    .fn { color: var(--fn); }
+    .str { color: var(--string); }
+    .num { color: var(--num); }
+    .cm { color: var(--muted); font-style: italic; }
+
+    /* ── STATS ── */
+    .stats {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      gap: 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .stat {
+      flex: 1;
+      padding: 2rem;
+      text-align: center;
+      border-right: 1px solid var(--border);
+      transition: background 0.2s;
+    }
+
+    .stat:last-child { border-right: none; }
+    .stat:hover { background: var(--card); }
+
+    .stat-num {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--accent);
+      display: block;
+      line-height: 1;
+      margin-bottom: 0.4rem;
+    }
+
+    .stat-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    /* ── SECTION COMMONS ── */
+    section {
+      position: relative;
+      z-index: 1;
+      padding: 6rem 4rem;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      gap: 1.5rem;
+      margin-bottom: 3.5rem;
+    }
+
+    .section-tag {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+    }
+
+    .section-title {
+      font-size: clamp(1.8rem, 3vw, 2.5rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .section-line {
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── PROJECTS GRID ── */
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .project-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      transition: all 0.25s;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+
+    .project-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(180,100,100,0.12), 0 0 20px rgba(201,104,122,0.1);
+    }
+
+    .card-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .card-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.75rem;
+      display: block;
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 0.3rem;
+    }
+
+    .card-difficulty {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.7rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 2px;
+      font-weight: 600;
+    }
+
+    .diff-beginner { background: rgba(160,130,109,0.12); color: var(--accent3); }
+    .diff-intermediate { background: rgba(201,104,122,0.12); color: var(--accent); }
+    .diff-advanced { background: rgba(181,72,90,0.12); color: var(--keyword); }
+
+    .card-body { padding: 1.5rem; }
+
+    .card-desc {
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 1.25rem;
+    }
+
+    .card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .tag {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 0.2rem 0.6rem;
+      border-radius: 2px;
+    }
+
+    .card-footer {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-link {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.78rem;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .card-link::after { content: '→'; transition: transform 0.2s; }
+    .project-card:hover .card-link::after { transform: translateX(4px); }
+
+    .card-stars {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    /* ── SKILLS ── */
+    .skills-bg { background: var(--surface); }
+
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+
+    .skill-item {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1.5rem;
+      transition: all 0.2s;
+    }
+
+    .skill-item:hover {
+      border-color: rgba(0,212,255,0.4);
+    }
+
+    .skill-name {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .skill-pct {
+      color: var(--accent);
+    }
+
+    .skill-bar-bg {
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .skill-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 2px;
+      transition: width 1s ease;
+    }
+
+    /* ── ABOUT ── */
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+    }
+
+    @media (max-width: 768px) {
+      .about-grid { grid-template-columns: 1fr; }
+    }
+
+    .about-text p {
+      color: var(--muted);
+      line-height: 1.8;
+      margin-bottom: 1rem;
+      font-size: 0.95rem;
+    }
+
+    .about-text p strong {
+      color: var(--text);
+    }
+
+    .terminal {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .terminal-bar {
+      background: var(--surface);
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .terminal-title {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-left: 0.5rem;
+    }
+
+    .terminal-body {
+      padding: 1.5rem;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.8rem;
+      line-height: 2;
+    }
+
+    .t-prompt { color: var(--accent3); }
+    .t-cmd { color: var(--text); }
+    .t-out { color: var(--muted); padding-left: 1rem; }
+    .t-cursor {
+      display: inline-block;
+      width: 8px;
+      height: 14px;
+      background: var(--accent);
+      animation: blink 1s step-end infinite;
+      vertical-align: middle;
+    }
+
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* ── CONTACT ── */
+    .contact-bg { background: var(--surface); }
+
+    .contact-inner {
+      max-width: 600px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .contact-inner p {
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.7;
+      margin-bottom: 2.5rem;
+    }
+
+    .contact-links {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      position: relative;
+      z-index: 1;
+      border-top: 1px solid var(--border);
+      padding: 2rem 4rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    /* ── ANIMATIONS ── */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .fade-in.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.5rem; }
+      nav ul { gap: 1.2rem; }
+      .hero { padding: 6rem 1.5rem 3rem; }
+      section { padding: 4rem 1.5rem; }
+      .stats { flex-wrap: wrap; }
+      .stat { min-width: 50%; }
+      footer { flex-direction: column; gap: 0.5rem; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-logo">Tu_Nombre<span>.sql</span></div>
+    <ul>
+      <li><a href="#proyectos">Proyectos</a></li>
+      <li><a href="#skills">Skills</a></li>
+      <li><a href="#sobre-mi">Sobre mí</a></li>
+      <li><a href="#contacto">Contacto</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-tag">Data Analyst · SQL Developer</div>
+      <h1>Hola, soy<br /><em>Tu Nombre</em></h1>
+      <p class="hero-sub">
+        Transformo datos en decisiones. Especializado en SQL,<br />
+        modelado de datos y análisis cuantitativo.
+      </p>
+      <div class="hero-cta">
+        <a href="#proyectos" class="btn btn-primary">Ver proyectos</a>
+        <a href="#contacto" class="btn btn-outline">Contactar</a>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <div class="code-window">
+        <div class="code-bar">
+          <div class="dot dot-r"></div>
+          <div class="dot dot-y"></div>
+          <div class="dot dot-g"></div>
+          <span class="code-filename">analisis_ventas.sql</span>
+        </div>
+        <div class="code-body">
+          <div><span class="cm">-- Top productos por revenue</span></div>
+          <div><span class="kw">SELECT</span></div>
+          <div>&nbsp;&nbsp;p.nombre,</div>
+          <div>&nbsp;&nbsp;<span class="fn">SUM</span>(o.cantidad * o.precio) <span class="kw">AS</span> revenue,</div>
+          <div>&nbsp;&nbsp;<span class="fn">RANK</span>() <span class="kw">OVER</span> (</div>
+          <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">ORDER BY</span> <span class="fn">SUM</span>(o.cantidad * o.precio) <span class="kw">DESC</span></div>
+          <div>&nbsp;&nbsp;) <span class="kw">AS</span> ranking</div>
+          <div><span class="kw">FROM</span> ordenes o</div>
+          <div><span class="kw">JOIN</span> productos p <span class="kw">ON</span> o.producto_id = p.id</div>
+          <div><span class="kw">WHERE</span> o.fecha >= <span class="str">'2024-01-01'</span></div>
+          <div><span class="kw">GROUP BY</span> p.nombre</div>
+          <div><span class="kw">HAVING</span> <span class="fn">SUM</span>(o.cantidad) > <span class="num">50</span></div>
+          <div><span class="kw">ORDER BY</span> revenue <span class="kw">DESC</span>;</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat fade-in">
+      <span class="stat-num">5</span>
+      <span class="stat-label">Proyectos</span>
+    </div>
+    <div class="stat fade-in">
+      <span class="stat-num">3</span>
+      <span class="stat-label">Bases de datos</span>
+    </div>
+    <div class="stat fade-in">
+      <span class="stat-num">50+</span>
+      <span class="stat-label">Queries escritas</span>
+    </div>
+    <div class="stat fade-in">
+      <span class="stat-num">∞</span>
+      <span class="stat-label">Curiosidad</span>
+    </div>
+  </div>
+
+  <!-- PROYECTOS -->
+  <section id="proyectos">
+    <div class="section-header">
+      <span class="section-tag">01 /</span>
+      <h2 class="section-title">Proyectos</h2>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="projects-grid">
+
+      <a href="#" class="project-card fade-in">
+        <div class="card-header">
+          <div>
+            <span class="card-icon">🛒</span>
+            <div class="card-title">Análisis de E-commerce</div>
+          </div>
+          <span class="card-difficulty diff-beginner">Básico</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">Análisis de ventas, productos más rentables y comportamiento de clientes usando el dataset público de Olist (Brasil).</p>
+          <div class="card-tags">
+            <span class="tag">JOINs</span>
+            <span class="tag">GROUP BY</span>
+            <span class="tag">Subqueries</span>
+            <span class="tag">PostgreSQL</span>
+          </div>
+        </div>
+        <div class="card-footer">
+          <span class="card-link">Ver en GitHub</span>
+          <span class="card-stars">⭐ Proyecto 1</span>
+        </div>
+      </a>
+
+      <a href="#" class="project-card fade-in">
+        <div class="card-header">
+          <div>
+            <span class="card-icon">🎬</span>
+            <div class="card-title">Base de Datos de Películas</div>
+          </div>
+          <span class="card-difficulty diff-beginner">Básico</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">Schema diseñado desde cero: tablas, relaciones y normalización. Queries para explorar géneros, directores y ratings.</p>
+          <div class="card-tags">
+            <span class="tag">Schema Design</span>
+            <span class="tag">Normalización</span>
+            <span class="tag">DDL</span>
+            <span class="tag">SQLite</span>
+          </div>
+        </div>
+        <div class="card-footer">
+          <span class="card-link">Ver en GitHub</span>
+          <span class="card-stars">⭐ Proyecto 2</span>
+        </div>
+      </a>
+
+      <a href="#" class="project-card fade-in">
+        <div class="card-header">
+          <div>
+            <span class="card-icon">📊</span>
+            <div class="card-title">KPIs de Negocio</div>
+          </div>
+          <span class="card-difficulty diff-intermediate">Intermedio</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">Dashboard de métricas: retención de usuarios, funnel de conversión y análisis de cohortes con Window Functions.</p>
+          <div class="card-tags">
+            <span class="tag">Window Functions</span>
+            <span class="tag">CTEs</span>
+            <span class="tag">Cohort Analysis</span>
+          </div>
+        </div>
+        <div class="card-footer">
+          <span class="card-link">Ver en GitHub</span>
+          <span class="card-stars">⭐ Proyecto 3</span>
+        </div>
+      </a>
+
+      <a href="#" class="project-card fade-in">
+        <div class="card-header">
+          <div>
+            <span class="card-icon">⚡</span>
+            <div class="card-title">Optimización de Queries</div>
+          </div>
+          <span class="card-difficulty diff-advanced">Avanzado</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">Comparación de queries lentas vs optimizadas. Uso de índices, EXPLAIN ANALYZE y técnicas de performance tuning.</p>
+          <div class="card-tags">
+            <span class="tag">Índices</span>
+            <span class="tag">EXPLAIN</span>
+            <span class="tag">Performance</span>
+            <span class="tag">PostgreSQL</span>
+          </div>
+        </div>
+        <div class="card-footer">
+          <span class="card-link">Ver en GitHub</span>
+          <span class="card-stars">⭐ Proyecto 4</span>
+        </div>
+      </a>
+
+      <a href="#" class="project-card fade-in">
+        <div class="card-header">
+          <div>
+            <span class="card-icon">🐍</span>
+            <div class="card-title">SQL + Python Pipeline</div>
+          </div>
+          <span class="card-difficulty diff-advanced">Avanzado</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">Pipeline de datos que extrae, transforma y carga datos con SQLAlchemy y pandas, luego visualiza con matplotlib.</p>
+          <div class="card-tags">
+            <span class="tag">SQLAlchemy</span>
+            <span class="tag">pandas</span>
+            <span class="tag">ETL</span>
+            <span class="tag">Python</span>
+          </div>
+        </div>
+        <div class="card-footer">
+          <span class="card-link">Ver en GitHub</span>
+          <span class="card-stars">⭐ Proyecto 5</span>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- SKILLS -->
+  <section id="skills" class="skills-bg">
+    <div class="section-header">
+      <span class="section-tag">02 /</span>
+      <h2 class="section-title">Habilidades</h2>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="skills-grid">
+      <div class="skill-item fade-in">
+        <div class="skill-name"><span>SQL Avanzado</span><span class="skill-pct">90%</span></div>
+        <div class="skill-bar-bg"><div class="skill-bar-fill" style="width:90%"></div></div>
+      </div>
+      <div class="skill-item fade-in">
+        <div class="skill-name"><span>PostgreSQL</span><span class="skill-pct">85%</span></div>
+        <div class="skill-bar-bg"><div class="skill-bar-fill" style="width:85%"></div></div>
+      </div>
+      <div class="skill-item fade-in">
+        <div class="skill-name"><span>MySQL / MariaDB</span><span class="skill-pct">80%</span></div>
+        <div class="skill-bar-bg"><div class="skill-bar-fill" style="width:80%"></div></div>
+      </div>
+      <div class="skill-item fade-in">
+        <div class="skill-name"><span>Window Functions</span><span class="skill-pct">80%</span></div>
+        <div class="skill-bar-bg"><div class="skill-bar-fill" style="width:80%"></div></div>
+      </div>
+      <div class="skill-item fade-in">
+        <div class="skill-name"><span>Schema Design</span><span class="skill-pct">75%</span></div>
+        <div class="skill-bar-bg"><div class="skill-bar-fill" style="width:75%"></div></div>
+      </div>
+      <div class="skill-item fade-in">
+        <div class="skill-name"><span>Python + pandas</span><span class="skill-pct">70%</span></div>
+        <div class="skill-bar-bg"><div class="skill-bar-fill" style="width:70%"></div></div>
+      </div>
+      <div class="skill-item fade-in">
+        <div class="skill-name"><span>Git / GitHub</span><span class="skill-pct">75%</span></div>
+        <div class="skill-bar-bg"><div class="skill-bar-fill" style="width:75%"></div></div>
+      </div>
+      <div class="skill-item fade-in">
+        <div class="skill-name"><span>Looker Studio</span><span class="skill-pct">65%</span></div>
+        <div class="skill-bar-bg"><div class="skill-bar-fill" style="width:65%"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SOBRE MÍ -->
+  <section id="sobre-mi">
+    <div class="section-header">
+      <span class="section-tag">03 /</span>
+      <h2 class="section-title">Sobre mí</h2>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="about-grid">
+      <div class="about-text fade-in">
+        <p>Soy <strong>Tu Nombre</strong>, apasionado por los datos y su capacidad para contar historias. Aunque no tengo experiencia laboral formal, he dedicado los últimos meses a construir una base sólida en SQL y análisis de datos.</p>
+        <p>Me enfoco en entender <strong>qué hay detrás de los números</strong>: por qué caen las ventas, cómo retener usuarios, dónde están los cuellos de botella. Los datos son el lenguaje del negocio.</p>
+        <p>Actualmente buscando mi primera oportunidad en <strong>análisis de datos o Business Intelligence</strong>. Dispuesto a aprender, colaborar y aportar desde el día uno.</p>
+      </div>
+
+      <div class="terminal fade-in">
+        <div class="terminal-bar">
+          <div class="dot dot-r"></div>
+          <div class="dot dot-y"></div>
+          <div class="dot dot-g"></div>
+          <span class="terminal-title">perfil.sh</span>
+        </div>
+        <div class="terminal-body">
+          <div><span class="t-prompt">$ </span><span class="t-cmd">whoami</span></div>
+          <div class="t-out">Tu Nombre — Data Enthusiast</div>
+          <div><span class="t-prompt">$ </span><span class="t-cmd">cat educacion.txt</span></div>
+          <div class="t-out">Lic. Tu Carrera — Universidad</div>
+          <div class="t-out">SQL for Data Science — Coursera</div>
+          <div><span class="t-prompt">$ </span><span class="t-cmd">cat intereses.json</span></div>
+          <div class="t-out">["SQL", "Data Analysis", "Python",</div>
+          <div class="t-out">&nbsp;"Business Intelligence", "ETL"]</div>
+          <div><span class="t-prompt">$ </span><span class="t-cmd">echo $DISPONIBILIDAD</span></div>
+          <div class="t-out">Inmediata · Remoto / Presencial</div>
+          <div><span class="t-prompt">$ </span><span class="t-cmd"><span class="t-cursor"></span></span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACTO -->
+  <section id="contacto" class="contact-bg">
+    <div class="section-header">
+      <span class="section-tag">04 /</span>
+      <h2 class="section-title">Contacto</h2>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="contact-inner">
+      <p>¿Tienes un proyecto de datos interesante o una oportunidad para un analista SQL junior? Me encantaría conversar.</p>
+      <div class="contact-links">
+        <a href="mailto:tu@email.com" class="btn btn-primary">📧 Enviar email</a>
+        <a href="https://linkedin.com/in/tu-perfil" target="_blank" class="btn btn-outline">LinkedIn</a>
+        <a href="https://github.com/tu-usuario" target="_blank" class="btn btn-outline">GitHub</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <span>© 2025 Tu Nombre · Hecho con SQL y ❤️</span>
+    <span>Diseñado para datos, construido para personas.</span>
+  </footer>
+
+  <script>
+    // Intersection Observer for fade-in animations
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => entry.target.classList.add('visible'), i * 80);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+    // Active nav link
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('nav a[href^="#"]');
+
+    window.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(s => {
+        if (window.scrollY >= s.offsetTop - 120) current = s.id;
+      });
+      navLinks.forEach(a => {
+        a.style.color = a.getAttribute('href') === '#' + current ? 'var(--accent)' : '';
+      });
+    });
+  </script>
+</body>
+</html>
